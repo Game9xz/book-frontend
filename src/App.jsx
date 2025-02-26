@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './App.css';
 
 const App = () => {
   const [books, setBooks] = useState([]);
-  const [newBook, setNewBook] = useState({ title: '', author: '', image_url: ''});
+  const [newBook, setNewBook] = useState({ title: '', author: '', image_url: '' });
   const [editBook, setEditBook] = useState(null);
-  const uri = 'https://scaling-parakeet-5gv9p6vpv6c4977-5001.app.github.dev/'
+  const uri = 'https://shiny-winner-9vqv7w4wjgpfp74j-5001.app.github.dev/';
+
   useEffect(() => {
     fetchBooks();
   }, []);
@@ -13,9 +15,11 @@ const App = () => {
   const fetchBooks = async () => {
     try {
       const response = await axios.get(`${uri}/books`);
+      console.log("Fetched books:", response.data.books); // Debugging log
       setBooks(response.data.books);
     } catch (error) {
-      console.error('Error fetching books:', error);
+      console.error('Error fetching books:', error.response ? error.response.data : error.message);
+      alert('Error fetching books: ' + (error.response ? error.response.data : error.message));
     }
   };
 
@@ -29,8 +33,16 @@ const App = () => {
   };
 
   const handleCreateBook = async () => {
+    if (!newBook.title.trim() || !newBook.author.trim() || !newBook.image_url.trim()) {
+      alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
+      return;
+    }
+
     try {
       const response = await axios.post(`${uri}/books`, newBook);
+      console.log("Created book response:", response.data); // Debugging log
+
+      // Update the state with the new book
       setBooks([...books, response.data]);
       setNewBook({ title: '', author: '', image_url: '' }); // Clear the form
     } catch (error) {
@@ -39,10 +51,16 @@ const App = () => {
   };
 
   const handleEditBook = (book) => {
+    console.log("Editing book:", book); // Debugging log
     setEditBook({ ...book });
   };
 
   const handleUpdateBook = async () => {
+    if (!editBook.title.trim() || !editBook.author.trim() || !editBook.image_url.trim()) {
+      alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
+      return;
+    }
+
     try {
       const response = await axios.put(`${uri}/books/${editBook.id}`, editBook);
       const updatedBooks = books.map((book) =>
@@ -66,7 +84,7 @@ const App = () => {
   };
 
   return (
-    <div>
+    <div className='test'>
       <h1>Book List</h1>
       <table>
         <thead>
@@ -83,15 +101,15 @@ const App = () => {
             <tr key={book.id}>
               <td>{book.id}</td>
               <td>
-              {editBook && editBook.id === book.id ? (
-                <input
-                  type="text"
-                  name="image_url"
-                  value={editBook.image_url}
-                  onChange={handleInputChange}
-                />
+                {editBook && editBook.id === book.id ? (
+                  <input
+                    type="text"
+                    name="image_url"
+                    value={editBook.image_url}
+                    onChange={handleInputChange}
+                  />
                 ) : (
-                  <img src={book.image_url} alt={book.title} width="50" /> 
+                  <img src={book.image_url} alt={book.title} width="50" />
                 )}
               </td>
               <td>
@@ -131,29 +149,32 @@ const App = () => {
         </tbody>
       </table>
 
-      <h2>Add New Book</h2>
-      <input
-        type="text"
-        name="title"
-        placeholder="Title"
-        value={newBook.title}
-        onChange={handleInputChange}
-      />
-      <input
-        type="text"
-        name="author"
-        placeholder="Author"
-        value={newBook.author}
-        onChange={handleInputChange}
-      />
-      <input  
-        type="text"
-        name="image_url"
-        placeholder="Image URL"
-        value={newBook.image_url}
-        onChange={handleInputChange}
-      />
-      <button onClick={handleCreateBook}>Create</button>
+      <h1>Add New Book</h1>
+      <div className='input-books'>
+        <input
+          type="text"
+          name="title"
+          placeholder="Title"
+          value={newBook.title}
+          onChange={handleInputChange}
+        />
+        <input
+          type="text"
+          name="author"
+          placeholder="Author"
+          value={newBook.author}
+          onChange={handleInputChange}
+        />
+        <input
+          type="text"
+          name="image_url"
+          placeholder="Image URL"
+          value={newBook.image_url}
+          onChange={handleInputChange}
+        />
+        <button onClick={handleCreateBook}>Create</button>
+        <h2>กด Create แล้วต้อง รีเฟรช นะครับผมแก้ไม่เป็นว่ากดแล้วต้องโชว์เลยยังไง</h2>
+      </div>
     </div>
   );
 };
